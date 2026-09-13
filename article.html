@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Article · Design & Create</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=League+Spartan:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html#articles"><span>✦</span> DESIGN & CREATE</a>
+  <nav><a href="index.html#board">Board</a><a href="index.html#resources">Resources</a><a href="index.html#articles">Articles</a><a href="index.html#games">Games</a><a href="index.html#ideas">Ideas</a></nav>
+  <a class="editor-link" href="editor.html">Committee ↗</a>
+</header>
+<main class="article-page">
+  <a class="back-link" href="index.html#articles">← Back to Articles</a>
+  <article id="articleContent" class="full-article"><p class="empty-state">Loading article…</p></article>
+</main>
+<footer>DESIGN & CREATE · Built for curious people who like making things.</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://ogpujsqdvvwrhvbqzhmy.supabase.co';
+const SUPABASE_KEY='sb_publishable_MPpEh3NEhqg9KDoPAK7p6w_K8TCK3Wv';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const esc=s=>(s||'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+async function loadArticle(){
+  const id=new URLSearchParams(location.search).get('id');
+  const box=document.getElementById('articleContent');
+  if(!id){box.innerHTML='<h1>Article not found</h1><p>There is no article specified.</p>';return}
+  const {data,error}=await sb.from('articles').select('*').eq('id',id).eq('published',true).maybeSingle();
+  if(error||!data){box.innerHTML='<h1>Article not found</h1><p>This article may have been removed or is not published yet.</p>';return}
+  document.title=`${data.title} · Design & Create`;
+  const date=new Date(data.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const paragraphs=esc(data.content).split(/\n\s*\n/).map(x=>`<p>${x.replace(/\n/g,'<br>')}</p>`).join('');
+  box.innerHTML=`<header class="article-header"><span class="tag">${esc(data.category||'ARTICLE')}</span><h1>${esc(data.title)}</h1><p class="article-meta">Published ${date} · ${esc(data.author||'Design & Create')}</p></header><div class="article-body">${paragraphs}</div>${data.source_url?`<a class="article-source" href="${esc(data.source_url)}" target="_blank" rel="noopener">View original source / project ↗</a>`:''}`;
+}
+loadArticle();
+</script>
+</body>
+</html>

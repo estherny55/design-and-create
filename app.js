@@ -12,9 +12,9 @@ async function db(table, options={}) {
   return await q;
 }
 
-let mineTimer=null,mineSeconds=0,mineStarted=false,mineCells=[];
+let mineTimer=null,mineSeconds=0,mineStarted=false,mineWon=false,mineCells=[],mineOpened=0;
 function newMines(){
-  clearInterval(mineTimer); mineSeconds=0; mineStarted=false;
+  clearInterval(mineTimer); mineSeconds=0; mineStarted=false; mineWon=false; mineOpened=0;
   document.getElementById('mineTime').textContent=0;
   const grid=document.getElementById('mineGrid'); grid.innerHTML=''; mineCells=[];
   let mines=new Set(); while(mines.size<10) mines.add(Math.floor(Math.random()*64));
@@ -35,7 +35,7 @@ function revealMineArea(start,mines){
   while(queue.length){
     const i=queue.shift(), b=mineCells[i];
     if(!b || b.classList.contains('open') || b.dataset.mine==='true') continue;
-    const n=mineNumber(i,mines); b.classList.add('open'); b.textContent=n||'';
+    const n=mineNumber(i,mines); b.classList.add('open'); b.textContent=n||''; mineOpened++;
     if(n===0){
       const r=Math.floor(i/8),c=i%8;
       for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
@@ -50,12 +50,19 @@ function openMine(b,i,mines){
     mineStarted=true;
     mineTimer=setInterval(()=>{mineSeconds++;document.getElementById('mineTime').textContent=mineSeconds},1000);
   }
-  if(b.classList.contains('open')) return;
+  if(b.classList.contains('open') || mineWon) return;
   if(mines.has(i)){
     b.classList.add('mine');b.textContent='×';mineCells.forEach(x=>{if(x.dataset.mine==='true'){x.classList.add('mine');x.textContent='×'}});clearInterval(mineTimer);return;
   }
   revealMineArea(i,mines);
+  if(mineOpened >= 64 - mines.size){
+    mineWon=true;
+    clearInterval(mineTimer);
+    document.getElementById('mineMessage').textContent='CLEARED! You found all the safe squares.';
+    mineCells.forEach(x=>{ if(x.dataset.mine==='true'){ x.classList.add('flagged'); x.textContent='⚑'; } });
+  }
 }
+
 
 let wordAnswer='CREATE',guess='',row=0;
 async function getWord(){try{const today=new Date().toISOString().slice(0,10);const {data,error}=await db('wordle',{select:'word',eq:{date:today},limit:1});if(error)throw error;if(data?.[0]?.word)wordAnswer=data[0].word.toUpperCase()}catch(e){console.warn('Wordle load failed:',e)}}
@@ -92,7 +99,7 @@ async function submitArticle(e){
   }
 }
 
-async function loadArticles(){try{const {data,error}=await db('articles',{select:'*',eq:{published:true},order:{column:'created_at',ascending:false}});if(error)throw error;const grid=document.getElementById('articleGrid');if(!grid)return;if(!data?.length){grid.innerHTML='<p class="empty-state">No articles yet.</p>';return}grid.innerHTML=data.map(a=>`<article class="article-card"><span class="tag">ARTICLE</span><h3>${escapeHtml(a.title)}</h3><p>${escapeHtml(a.content).slice(0,220)}</p><a href="#" onclick="return false">Published by ${escapeHtml(a.author||'Design & Create')}</a></article>`).join('')}catch(e){console.warn('Articles load failed:',e)}}
+async function loadArticles(){try{const {data,error}=await db('articles',{select:'*',eq:{published:true},order:{column:'created_at',ascending:false}});if(error)throw error;const grid=document.getElementById('articleGrid');if(!grid)return;if(!data?.length){grid.innerHTML='<p class="empty-state">No articles yet.</p>';return}grid.innerHTML=data.map(a=>`<article class="article-card"><span class="tag">${escapeHtml(a.category||'ARTICLE')}</span><h3>${escapeHtml(a.title)}</h3><p>${escapeHtml(a.content).slice(0,220)}</p><a class="article-read" href="article.html?id=${encodeURIComponent(a.id)}">Read article →</a><div class="article-byline">Published by ${escapeHtml(a.author||'Design & Create')}</div></article>`).join('')}catch(e){console.warn('Articles load failed:',e)}}
 
 async function loadResources(){try{const {data,error}=await db('resources',{select:'*',order:{column:'created_at',ascending:false}});if(error)throw error;const grid=document.getElementById('resourceGrid');if(!grid)return;if(!data?.length){grid.innerHTML='<p class="empty-state">No resources yet.</p>';return}grid.innerHTML=data.map(r=>`<article class="resource"><span>RESOURCE</span><h3>${escapeHtml(r.title)}</h3><p>${escapeHtml(r.description||'')}</p>${r.url?`<a class="resource-link" href="${escapeHtml(r.url)}" target="_blank" rel="noopener">Open resource →</a>`:''}</article>`).join('')}catch(e){console.warn('Resources load failed:',e)}}
 function escapeHtml(s=''){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
