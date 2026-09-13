@@ -4,7 +4,7 @@ const API = `${SUPABASE_URL}/rest/v1`;
 const headers = {'apikey': SUPABASE_KEY, 'Content-Type':'application/json'};
 
 async function db(path, options={}){
-  const r=await fetch(`${API}/${path}`, {headers:{...headers,...(options.headers||{})}, ...options});
+  const r=await fetch(`${API}/${path}`, {...options, headers:{...headers,...(options.headers||{})}});
   if(!r.ok) throw new Error(await r.text());
   const text=await r.text(); return text?JSON.parse(text):null;
 }
