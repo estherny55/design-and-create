@@ -28,7 +28,7 @@
 </section>
 
 <section class="board section" id="challenge">
-  <div class="section-head"><div><span class="eyebrow">THE CLUB BOARD</span><h2>This month's challenge</h2></div><span class="pill">MONTH 01</span></div>
+  <div class="section-head"><div><span class="eyebrow">THE CLUB BOARD</span><h2>This month's challenge</h2></div><span class="pill" id="monthLabel">MONTH 01</span></div>
   <div class="challenge">
     <div><div class="label">PROBLEM</div><h3>How could we make school life easier?</h3>
     <p>Pick one small frustration students face every day. Your goal is to design a realistic product or system that makes it better.</p></div>
@@ -43,21 +43,24 @@
 </section>
 
 <section class="section" id="resources">
-  <div class="section-head"><div><span class="eyebrow">TOOLKIT</span><h2>Resources</h2></div><p>Short guides you can actually use during a challenge.</p></div>
-  <div class="cards">
-    <article class="resource"><span>THINK</span><h3>Find the real problem</h3><p>Separate a genuine user problem from a solution you already have in mind.</p><button onclick="alert('Resource demo: ask who has the problem, when it happens, and why current solutions are not enough.')">Read guide →</button></article>
-    <article class="resource"><span>DESIGN</span><h3>Brainstorm better</h3><p>Generate lots of possibilities before judging which idea is best.</p><button onclick="alert('Resource demo: use a 5-minute quantity-first brainstorm, then combine your strongest ideas.')">Read guide →</button></article>
-    <article class="resource"><span>CREATE</span><h3>Prototype cheaply</h3><p>Use paper, cardboard and whatever is around you to test the idea quickly.</p><button onclick="alert('Resource demo: prototype the riskiest part first. A rough model is useful if it answers a question.')">Read guide →</button></article>
-    <article class="resource"><span>PRESENT</span><h3>Pitch in 60 seconds</h3><p>Problem → user → solution → why it works → what you would improve.</p><button onclick="alert('Resource demo: finish with one clear sentence explaining why your solution is worth making.')">Read guide →</button></article>
-  </div>
+  <div class="section-head"><div><span class="eyebrow">TOOLKIT</span><h2>Resources</h2></div><p>Short guides and links added by the committee.</p></div>
+  <div class="cards" id="resourceGrid"><p class="empty-state">No resources yet.</p></div>
 </section>
 
 <section class="section alt" id="articles">
-  <div class="section-head"><div><span class="eyebrow">THE D&C JOURNAL</span><h2>Articles</h2></div><p>Ideas, design thinking and things worth noticing.</p></div>
-  <div class="article-grid">
-    <article class="article-card featured"><div class="article-art">?</div><div><span class="tag">DESIGN</span><h3>Why do some products fail?</h3><p>A useful product is not necessarily the most complicated one. Start with the person and the problem.</p><a href="#" onclick="return false">Read article →</a></div></article>
-    <article class="article-card"><span class="tag">CREATIVITY</span><h3>The weirdest problems nobody solves</h3><p>Small annoyances can be excellent starting points for design.</p><a href="#" onclick="return false">Read →</a></article>
-    <article class="article-card"><span class="tag">PRESENTING</span><h3>What makes a good pitch?</h3><p>Make your audience understand the problem before you sell the solution.</p><a href="#" onclick="return false">Read →</a></article>
+  <div class="section-head"><div><span class="eyebrow">THE D&C JOURNAL</span><h2>Articles</h2></div><p>Articles published by the committee.</p></div>
+  <div class="article-grid" id="articleGrid"><p class="empty-state">No articles yet.</p></div>
+  <div class="share-panel">
+    <div><span class="eyebrow">YOUR WORK</span><h3>Have something you want to share?</h3><p>It doesn't have to be school-related. Share an article, research, project, discovery, review, or anything you think other members might find interesting. The committee will review it before it appears here.</p></div>
+    <form onsubmit="submitArticle(event)">
+      <select id="submissionType"><option>Article</option><option>Research</option><option>Project</option><option>Something I found</option><option>Other</option></select>
+      <input id="submissionTitle" required placeholder="Title">
+      <input id="submissionAuthor" placeholder="Your name (optional)">
+      <textarea id="submissionContent" required placeholder="Tell us about it..."></textarea>
+      <input id="submissionUrl" type="url" placeholder="Optional link to the original source / project">
+      <button class="button" type="submit">Submit for review</button>
+      <small id="articleStatus"></small>
+    </form>
   </div>
 </section>
 
