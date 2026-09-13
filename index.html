@@ -16,7 +16,7 @@
     <a href="#board">Board</a><a href="#resources">Resources</a><a href="#articles">Articles</a>
     <a href="#games">Games</a><a href="#ideas">Ideas</a><a href="#join">Join</a>
   </nav>
-  <a class="editor-link" href="editor.html">Committee ↗</a>
+  
 </header>
 
 <main>
@@ -91,8 +91,8 @@
     <div class="game-box"><div class="game-title"><div><span class="eyebrow">01</span><h3>Minesweeper</h3></div><button class="small-button" onclick="newMines()">New game</button></div>
       <div class="mine-info"><span>Mines: <b id="mineCount">10</b></span><span>Time: <b id="mineTime">0</b></span></div><div id="mineGrid" class="mine-grid"></div><p id="mineMessage" class="game-message"></p>
     </div>
-    <div class="game-box wordle"><div class="game-title"><div><span class="eyebrow">02</span><h3>Daily Wordle</h3></div></div>
-      <p>Today's committee-set word. Six guesses.</p><div id="wordRows"></div><div class="keyboard" id="keyboard"></div><p id="wordMessage" class="game-message"></p>
+    <div class="game-box memory-game"><div class="game-title"><div><span class="eyebrow">02</span><h3>Memory Match</h3></div><button class="small-button" onclick="newMemoryGame()">New game</button></div>
+      <p>Match all the pairs. How quickly can you clear the board?</p><div class="memory-info"><span>Pairs: <b id="memoryPairs">0 / 8</b></span><span>Moves: <b id="memoryMoves">0</b></span></div><div id="memoryGrid" class="memory-grid"></div><p id="memoryMessage" class="game-message"></p>
     </div>
   </div>
 </section>

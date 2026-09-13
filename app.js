@@ -64,35 +64,48 @@ function openMine(b,i,mines){
 }
 
 
-let wordAnswer='CREATE',guess='',row=0;
-async function getWord(){try{const today=new Date().toISOString().slice(0,10);const {data,error}=await db('wordle',{select:'word',eq:{date:today},limit:1});if(error)throw error;if(data?.[0]?.word)wordAnswer=data[0].word.toUpperCase()}catch(e){console.warn('Wordle load failed:',e)}}
-async function initWordle(){await getWord();const rows=document.getElementById('wordRows');rows.innerHTML='';for(let r=0;r<6;r++){let rw=document.createElement('div');rw.className='word-row';for(let c=0;c<6;c++){let x=document.createElement('div');x.className='letter';x.id=`w${r}${c}`;rw.appendChild(x)}rows.appendChild(rw)}let keys='QWERTYUIOPASDFGHJKLZXCVBNM';document.getElementById('keyboard').innerHTML=keys.split('').map(k=>`<button class="key" onclick="keyWord('${k}')">${k}</button>`).join('')+`<button class="key" onclick="keyWord('⌫')">⌫</button><button class="key" onclick="submitWord()">ENTER</button>`}
-function keyWord(k){if(k==='⌫')guess=guess.slice(0,-1);else if(guess.length<6)guess+=k;drawGuess()}
-function drawGuess(){for(let c=0;c<6;c++)document.getElementById(`w${row}${c}`).textContent=guess[c]||''}
-function submitWord(){if(guess.length!==6){document.getElementById('wordMessage').textContent='Use 6 letters.';return}let ans=wordAnswer;for(let c=0;c<6;c++){let el=document.getElementById(`w${row}${c}`),ch=guess[c];el.classList.add(ch===ans[c]?'correct':ans.includes(ch)?'present':'absent')}if(guess===ans){document.getElementById('wordMessage').textContent='Solved.';return}row++;guess='';if(row>=6){document.getElementById('wordMessage').textContent='The word was '+ans+'.';return}drawGuess()}
 
-
-async function submitMember(e){
-  e.preventDefault();
-  const status=document.getElementById('memberStatus');
-  const name=document.getElementById('memberName').value.trim();
-  const year_group=document.getElementById('memberYear').value;
-  status.textContent='Sending…';
-  try{
-    const {error}=await sb.from('members').insert({name,year_group,added_to_chat:false});
-    if(error) throw error;
-    document.getElementById('memberName').value='';
-    document.getElementById('memberYear').value='';
-    status.textContent='Thanks — your details have been sent to the committee.';
-  }catch(err){
-    console.error('Group chat signup failed:', err);
-    if(err?.code==='42P01') status.textContent='The group chat sign-up is not set up yet. Please tell the committee.';
-    else if(err?.code==='42501') status.textContent='The group chat sign-up needs a Supabase permission fix. Please tell the committee.';
-    else status.textContent='Could not send your details. Please try again.';
+let memoryCards=[],memoryFlipped=[],memoryMatched=0,memoryMoves=0,memoryLock=false;
+const memorySymbols=['✦','●','▲','◆','★','■','☀','☘'];
+function newMemoryGame(){
+  const grid=document.getElementById('memoryGrid');
+  if(!grid)return;
+  memoryCards=[...memorySymbols,...memorySymbols].sort(()=>Math.random()-0.5);
+  memoryFlipped=[];memoryMatched=0;memoryMoves=0;memoryLock=false;
+  document.getElementById('memoryPairs').textContent='0 / 8';
+  document.getElementById('memoryMoves').textContent='0';
+  document.getElementById('memoryMessage').textContent='';
+  grid.innerHTML=memoryCards.map((symbol,i)=>`<button class="memory-card" data-index="${i}" onclick="flipMemory(${i})"><span>${symbol}</span></button>`).join('');
+}
+function flipMemory(i){
+  if(memoryLock||memoryFlipped.includes(i))return;
+  const card=document.querySelector(`.memory-card[data-index="${i}"]`);
+  if(!card||card.classList.contains('matched'))return;
+  card.classList.add('flipped');memoryFlipped.push(i);
+  if(memoryFlipped.length<2)return;
+  memoryMoves++;document.getElementById('memoryMoves').textContent=memoryMoves;
+  const [a,b]=memoryFlipped;
+  if(memoryCards[a]===memoryCards[b]){
+    document.querySelector(`.memory-card[data-index="${a}"]`).classList.add('matched');
+    document.querySelector(`.memory-card[data-index="${b}"]`).classList.add('matched');
+    memoryMatched++;document.getElementById('memoryPairs').textContent=`${memoryMatched} / 8`;memoryFlipped=[];
+    if(memoryMatched===8)document.getElementById('memoryMessage').textContent='CLEARED! You matched every pair.';
+  }else{
+    memoryLock=true;
+    setTimeout(()=>{
+      [a,b].forEach(n=>document.querySelector(`.memory-card[data-index="${n}"]`)?.classList.remove('flipped'));
+      memoryFlipped=[];memoryLock=false;
+    },650);
   }
 }
-
-async function submitIdea(e){e.preventDefault();const status=document.getElementById('ideaStatus');const text=document.getElementById('ideaText').value.trim();status.textContent='Sending…';try{const {error}=await db('ideas',{insert:{type:document.getElementById('ideaType').value,text}});if(error)throw error;document.getElementById('ideaText').value='';status.textContent='Thanks — your idea has been sent to the committee.'}catch(err){console.error('Idea submission failed:',err);status.textContent='Could not send the idea. Please try again.'}}
+let logoClicks=0,logoClickTimer=null;
+function secretCommitteeAccess(e){
+  e.preventDefault();
+  logoClicks++;
+  clearTimeout(logoClickTimer);
+  logoClickTimer=setTimeout(()=>logoClicks=0,1200);
+  if(logoClicks>=5){logoClicks=0;window.location.href='editor.html';}
+}
 
 async function loadChallenge(){try{const {data,error}=await db('challenge',{select:'*',order:{column:'updated_at',ascending:false},limit:1});if(error)throw error;const d=data?.[0];if(!d)return;let h=document.querySelector('.challenge h3'),p=document.querySelector('.challenge p');if(h)h.textContent=d.topic;if(p)p.textContent=d.description||'';const stage=Math.max(0,Math.min(3,Number(d.stage||0)));document.querySelectorAll('.step').forEach((x,i)=>x.classList.toggle('active',i===stage));const current=['Think','Design','Create','Present'][stage];const next=stage<3?['Think','Design','Create','Present'][stage+1]:'Complete';let meta=document.querySelectorAll('.challenge-meta strong');if(meta[0])meta[0].textContent=current;if(meta[1])meta[1].textContent=next;const month=document.getElementById('monthLabel');if(month)month.textContent=d.month_label||'MONTH 01';}catch(e){console.warn('Challenge load failed:',e)}}
 
@@ -124,4 +137,4 @@ async function loadArticles(){try{const {data,error}=await db('articles',{select
 
 async function loadResources(){try{const {data,error}=await db('resources',{select:'*',order:{column:'created_at',ascending:false}});if(error)throw error;const grid=document.getElementById('resourceGrid');if(!grid)return;if(!data?.length){grid.innerHTML='<p class="empty-state">No resources yet.</p>';return}grid.innerHTML=data.map(r=>`<article class="resource"><span>RESOURCE</span><h3>${escapeHtml(r.title)}</h3><p>${escapeHtml(r.description||'')}</p>${r.url?`<a class="resource-link" href="${escapeHtml(r.url)}" target="_blank" rel="noopener">Open resource →</a>`:''}</article>`).join('')}catch(e){console.warn('Resources load failed:',e)}}
 function escapeHtml(s=''){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
-document.addEventListener('DOMContentLoaded',()=>{newMines();initWordle();loadChallenge();loadArticles();loadResources()});
+document.addEventListener('DOMContentLoaded',()=>{newMines();newMemoryGame();loadChallenge();loadArticles();loadResources();document.querySelector('.brand')?.addEventListener('click',secretCommitteeAccess)});
