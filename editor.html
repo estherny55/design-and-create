@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Committee Editor · Design & Create</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+<header class="topbar"><a class="brand" href="index.html">✦ DESIGN & CREATE</a><nav><a href="index.html">Member site ↗</a></nav></header>
+<main class="editor">
+<section class="hero small"><div class="eyebrow">COMMITTEE ONLY · DEMO EDITOR</div><h1>Edit the club.</h1><p class="hero-copy">This first version saves changes in this browser. We will connect the shared database after the design is approved.</p></section>
+<div class="editor-grid">
+<section class="edit-card"><span class="eyebrow">MONTHLY CHALLENGE</span><label>Topic / problem<input id="topic" value="How could we make school life easier?"></label><label>Description<textarea id="desc">Pick one small frustration students face every day. Your goal is to design a realistic product or system that makes it better.</textarea></label><label>Current stage<select id="stage"><option value="0">01 · Think</option><option value="1">02 · Design</option><option value="2">03 · Create</option><option value="3">04 · Present</option></select></label><button class="button" onclick="saveChallenge()">Save challenge</button><p id="saved"></p></section>
+<section class="edit-card"><span class="eyebrow">DAILY WORDLE</span><h2>Set today's word</h2><label>Word<input id="word" maxlength="6" value="CREATE"></label><button class="button" onclick="saveWord()">Save word</button><p id="wordSaved"></p><hr><span class="eyebrow">IDEA INBOX</span><div id="ideasList" class="inbox"></div></section>
+<section class="edit-card"><span class="eyebrow">PUBLISHED ARTICLES</span><h2>Article manager</h2><p>Add article drafts here in the future. The live version will let you review and publish member submissions.</p><button class="small-button" onclick="alert('Article manager will be connected to the shared database in Step 2.')">+ Add article</button></section>
+<section class="edit-card"><span class="eyebrow">RESOURCES</span><h2>Resource manager</h2><p>Create, edit or remove the guides shown on the member website.</p><button class="small-button" onclick="alert('Resource manager will be connected to the shared database in Step 2.')">+ Add resource</button></section>
+</div>
+</main><script src="app.js"></script><script>
+function loadEditor(){let d=JSON.parse(localStorage.getItem('dcChallenge')||'{}');if(d.topic)topic.value=d.topic;if(d.desc)desc.value=d.desc;if(d.stage!==undefined)stage.value=d.stage;word.value=localStorage.getItem('dcWord')||'CREATE';let ideas=JSON.parse(localStorage.getItem('dcIdeas')||'[]');ideasList.innerHTML=ideas.length?ideas.map((x,i)=>`<div class="inbox-item"><b>${x.type}</b><p>${x.text}</p><button onclick="removeIdea(${i})">Archive</button></div>`).join(''):'<p>No suggestions yet.</p>'}
+function saveChallenge(){localStorage.setItem('dcChallenge',JSON.stringify({topic:topic.value,desc:desc.value,stage:Number(stage.value)}));saved.textContent='Saved on this browser.'}
+function saveWord(){localStorage.setItem('dcWord',word.value.toUpperCase());wordSaved.textContent='Saved on this browser.'}
+function removeIdea(i){let a=JSON.parse(localStorage.getItem('dcIdeas')||'[]');a.splice(i,1);localStorage.setItem('dcIdeas',JSON.stringify(a));loadEditor()}
+loadEditor();
+</script></body></html>
