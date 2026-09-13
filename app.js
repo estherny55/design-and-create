@@ -71,6 +71,25 @@ function keyWord(k){if(k==='⌫')guess=guess.slice(0,-1);else if(guess.length<6)
 function drawGuess(){for(let c=0;c<6;c++)document.getElementById(`w${row}${c}`).textContent=guess[c]||''}
 function submitWord(){if(guess.length!==6){document.getElementById('wordMessage').textContent='Use 6 letters.';return}let ans=wordAnswer;for(let c=0;c<6;c++){let el=document.getElementById(`w${row}${c}`),ch=guess[c];el.classList.add(ch===ans[c]?'correct':ans.includes(ch)?'present':'absent')}if(guess===ans){document.getElementById('wordMessage').textContent='Solved.';return}row++;guess='';if(row>=6){document.getElementById('wordMessage').textContent='The word was '+ans+'.';return}drawGuess()}
 
+
+async function submitMember(e){
+  e.preventDefault();
+  const status=document.getElementById('memberStatus');
+  const name=document.getElementById('memberName').value.trim();
+  const year_group=document.getElementById('memberYear').value;
+  status.textContent='Sending…';
+  try{
+    const {error}=await sb.from('members').insert({name,year_group,added_to_chat:false});
+    if(error) throw error;
+    document.getElementById('memberName').value='';
+    document.getElementById('memberYear').value='';
+    status.textContent='Thanks — your details have been sent to the committee.';
+  }catch(err){
+    console.error('Group chat signup failed:',err);
+    status.textContent='Could not send your details. Please try again.';
+  }
+}
+
 async function submitIdea(e){e.preventDefault();const status=document.getElementById('ideaStatus');const text=document.getElementById('ideaText').value.trim();status.textContent='Sending…';try{const {error}=await db('ideas',{insert:{type:document.getElementById('ideaType').value,text}});if(error)throw error;document.getElementById('ideaText').value='';status.textContent='Thanks — your idea has been sent to the committee.'}catch(err){console.error('Idea submission failed:',err);status.textContent='Could not send the idea. Please try again.'}}
 
 async function loadChallenge(){try{const {data,error}=await db('challenge',{select:'*',order:{column:'updated_at',ascending:false},limit:1});if(error)throw error;const d=data?.[0];if(!d)return;let h=document.querySelector('.challenge h3'),p=document.querySelector('.challenge p');if(h)h.textContent=d.topic;if(p)p.textContent=d.description||'';const stage=Math.max(0,Math.min(3,Number(d.stage||0)));document.querySelectorAll('.step').forEach((x,i)=>x.classList.toggle('active',i===stage));const current=['Think','Design','Create','Present'][stage];const next=stage<3?['Think','Design','Create','Present'][stage+1]:'Complete';let meta=document.querySelectorAll('.challenge-meta strong');if(meta[0])meta[0].textContent=current;if(meta[1])meta[1].textContent=next;const month=document.getElementById('monthLabel');if(month)month.textContent=d.month_label||'MONTH 01';}catch(e){console.warn('Challenge load failed:',e)}}

@@ -14,7 +14,7 @@
   <a class="brand" href="#board"><span>✦</span> DESIGN & CREATE</a>
   <nav>
     <a href="#board">Board</a><a href="#resources">Resources</a><a href="#articles">Articles</a>
-    <a href="#games">Games</a><a href="#ideas">Ideas</a>
+    <a href="#games">Games</a><a href="#ideas">Ideas</a><a href="#join">Join</a>
   </nav>
   <a class="editor-link" href="editor.html">Committee ↗</a>
 </header>
@@ -73,6 +73,27 @@
     <div class="game-box wordle"><div class="game-title"><div><span class="eyebrow">02</span><h3>Daily Wordle</h3></div><span class="pill">DEMO</span></div>
       <p>Today's committee-set word. Six guesses. (Demo word is <b>CREATE</b>.)</p><div id="wordRows"></div><div class="keyboard" id="keyboard"></div><p id="wordMessage" class="game-message"></p>
     </div>
+  </div>
+</section>
+
+<section class="section alt" id="join">
+  <div class="join-panel">
+    <div>
+      <span class="eyebrow">STAY CONNECTED</span>
+      <h2>Join the group chat</h2>
+      <p>Want updates about challenges, meetings and club activities? Leave your name and year group below and the committee will add you to the Design & Create group chat.</p>
+    </div>
+    <form onsubmit="submitMember(event)">
+      <label for="memberName">Name</label>
+      <input id="memberName" required maxlength="80" autocomplete="name" placeholder="Your name">
+      <label for="memberYear">Year group</label>
+      <select id="memberYear" required>
+        <option value="" disabled selected>Select your year group</option>
+        <option>Year 9</option><option>Year 10</option><option>Year 11</option><option>Year 12</option><option>Year 13</option>
+      </select>
+      <button class="button" type="submit">Join the group chat →</button>
+      <small id="memberStatus"></small>
+    </form>
   </div>
 </section>
 
