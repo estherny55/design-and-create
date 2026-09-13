@@ -9,12 +9,29 @@
 <div id="editorArea" class="editor-grid" style="display:none">
 <section class="edit-card"><span class="eyebrow">MONTHLY CHALLENGE</span><label>Month label<input id="monthLabelInput" placeholder="e.g. SEPTEMBER 2026"></label><label>Topic / problem<input id="topic"></label><label>Description<textarea id="desc"></textarea></label><label>Current stage<select id="stage"><option value="0">01 · Think</option><option value="1">02 · Design</option><option value="2">03 · Create</option><option value="3">04 · Present</option></select></label><button class="button" onclick="saveChallenge()">Save challenge</button><p id="saved"></p></section>
 <section class="edit-card"><span class="eyebrow">DAILY WORDLE</span><h2>Set today's word</h2><label>Word<input id="word" maxlength="6" autocomplete="off"></label><button class="button" onclick="saveWord()">Save word</button><p id="wordSaved"></p><hr><span class="eyebrow">IDEA INBOX</span><div id="ideasList" class="inbox"></div></section>
-<section class="edit-card"><span class="eyebrow">GROUP CHAT</span><h2>Join requests</h2><p>Students who submit their name and year group appear here. Mark them as added once they have been added to the group chat.</p><div id="membersList" class="inbox"></div></section>
+<section class="edit-card"><span class="eyebrow">GROUP CHAT</span><h2>Join requests</h2><p>Students who submit their full name and year group appear here. Mark them as added once they have been added to the group chat.</p><button class="small-button" onclick="exportMembersExcel()">Export name list to Excel</button><div id="membersList" class="inbox"></div></section>
 <section class="edit-card"><span class="eyebrow">ARTICLES</span><h2>Review submissions</h2><p>Member submissions stay private until the committee publishes them.</p><label>Title<input id="articleTitle"></label><label>Author<input id="articleAuthor"></label><label>Content<textarea id="articleContent"></textarea></label><label>Optional source / project link<input id="articleUrl" type="url"></label><button class="button" onclick="addArticle()">Publish article</button><div id="articleList" class="inbox"></div></section>
 <section class="edit-card"><span class="eyebrow">RESOURCES</span><h2>Add a resource</h2><label>Title<input id="resourceTitle"></label><label>Description<textarea id="resourceDesc"></textarea></label><label>URL<input id="resourceUrl" type="url"></label><button class="button" onclick="addResource()">Add resource</button><div id="resourceList" class="inbox"></div></section>
 </div>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+async function exportMembersExcel(){
+  const {data,error}=await sb.from('members').select('name,year_group,added_to_chat,created_at').order('created_at',{ascending:true});
+  if(error){alert(error.message);return}
+  if(!data?.length){alert('There are no join requests to export yet.');return}
+  const rows=data.map(m=>({
+    'Full name':m.name,
+    'Year group':m.year_group,
+    'Added to chat':m.added_to_chat?'Yes':'No',
+    'Requested at':new Date(m.created_at).toLocaleString()
+  }));
+  const ws=XLSX.utils.json_to_sheet(rows);
+  ws['!cols']=[{wch:28},{wch:14},{wch:16},{wch:24}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Members');
+  XLSX.writeFile(wb,'Design-and-Create-Members.xlsx');
+}
+</script>
 <script>
 const SUPABASE_URL='https://ogpujsqdvvwrhvbqzhmy.supabase.co';
 const SUPABASE_KEY='sb_publishable_MPpEh3NEhqg9KDoPAK7p6w_K8TCK3Wv';
@@ -41,4 +58,21 @@ async function deleteArticle(id){const {error}=await sb.from('articles').delete(
 async function addResource(){const title=$('resourceTitle').value.trim(),description=$('resourceDesc').value.trim(),url=$('resourceUrl').value.trim();if(!title)return;const {error}=await sb.from('resources').insert({title,description,url});$('resourceList').textContent=error?error.message:'Resource added.';$('resourceTitle').value='';$('resourceDesc').value='';$('resourceUrl').value='';loadResources()}
 async function loadResources(){const {data}=await sb.from('resources').select('*').order('created_at',{ascending:false});$('resourceList').innerHTML=data?.length?data.map(r=>`<div class="inbox-item"><b>${esc(r.title)}</b><p>${esc(r.description||'')}</p></div>`).join(''):'<p>No resources yet.</p>'}
 sb.auth.getSession().then(({data})=>{if(data.session)showEditor()});
+
+async function exportMembersExcel(){
+  const {data,error}=await sb.from('members').select('name,year_group,added_to_chat,created_at').order('created_at',{ascending:true});
+  if(error){alert(error.message);return}
+  if(!data?.length){alert('There are no join requests to export yet.');return}
+  const rows=data.map(m=>({
+    'Full name':m.name,
+    'Year group':m.year_group,
+    'Added to chat':m.added_to_chat?'Yes':'No',
+    'Requested at':new Date(m.created_at).toLocaleString()
+  }));
+  const ws=XLSX.utils.json_to_sheet(rows);
+  ws['!cols']=[{wch:28},{wch:14},{wch:16},{wch:24}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Members');
+  XLSX.writeFile(wb,'Design-and-Create-Members.xlsx');
+}
 </script></body></html>
