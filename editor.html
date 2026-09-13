@@ -15,24 +15,7 @@
 </div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-async function exportMembersExcel(){
-  const {data,error}=await sb.from('members').select('name,year_group,added_to_chat,created_at').order('created_at',{ascending:true});
-  if(error){alert(error.message);return}
-  if(!data?.length){alert('There are no join requests to export yet.');return}
-  const rows=data.map(m=>({
-    'Full name':m.name,
-    'Year group':m.year_group,
-    'Added to chat':m.added_to_chat?'Yes':'No',
-    'Requested at':new Date(m.created_at).toLocaleString()
-  }));
-  const ws=XLSX.utils.json_to_sheet(rows);
-  ws['!cols']=[{wch:28},{wch:14},{wch:16},{wch:24}];
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'Members');
-  XLSX.writeFile(wb,'Design-and-Create-Members.xlsx');
-}
-</script>
+
 <script>
 const SUPABASE_URL='https://ogpujsqdvvwrhvbqzhmy.supabase.co';
 const SUPABASE_KEY='sb_publishable_MPpEh3NEhqg9KDoPAK7p6w_K8TCK3Wv';
@@ -60,20 +43,16 @@ async function addResource(){const title=$('resourceTitle').value.trim(),descrip
 async function loadResources(){const {data}=await sb.from('resources').select('*').order('created_at',{ascending:false});$('resourceList').innerHTML=data?.length?data.map(r=>`<div class="inbox-item"><b>${esc(r.title)}</b><p>${esc(r.description||'')}</p></div>`).join(''):'<p>No resources yet.</p>'}
 sb.auth.getSession().then(({data})=>{if(data.session)showEditor()});
 
+
 async function exportMembersExcel(){
   const {data,error}=await sb.from('members').select('name,year_group,added_to_chat,created_at').order('created_at',{ascending:true});
-  if(error){alert(error.message);return}
+  if(error){alert('Could not load the member list: '+error.message);return}
   if(!data?.length){alert('There are no join requests to export yet.');return}
-  const rows=data.map(m=>({
-    'Full name':m.name,
-    'Year group':m.year_group,
-    'Added to chat':m.added_to_chat?'Yes':'No',
-    'Requested at':new Date(m.created_at).toLocaleString()
-  }));
-  const ws=XLSX.utils.json_to_sheet(rows);
-  ws['!cols']=[{wch:28},{wch:14},{wch:16},{wch:24}];
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'Members');
-  XLSX.writeFile(wb,'Design-and-Create-Members.xlsx');
+  const escXml=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+  const rows=data.map(m=>`<Row><Cell><Data ss:Type="String">${escXml(m.name)}</Data></Cell><Cell><Data ss:Type="String">${escXml(m.year_group)}</Data></Cell><Cell><Data ss:Type="String">${m.added_to_chat?'Yes':'No'}</Data></Cell><Cell><Data ss:Type="String">${escXml(new Date(m.created_at).toLocaleString())}</Data></Cell></Row>`).join('');
+  const xml=`<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Members"><Table><Column ss:Width="190"/><Column ss:Width="100"/><Column ss:Width="110"/><Column ss:Width="170"/><Row><Cell><Data ss:Type="String">Full name</Data></Cell><Cell><Data ss:Type="String">Year group</Data></Cell><Cell><Data ss:Type="String">Added to chat</Data></Cell><Cell><Data ss:Type="String">Requested at</Data></Cell></Row>${rows}</Table></Worksheet></Workbook>`;
+  const blob=new Blob([xml],{type:'application/vnd.ms-excel'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='Design-and-Create-Members.xls';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 </script></body></html>
