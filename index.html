@@ -27,6 +27,27 @@
   <div class="hero-buttons"><a class="button" href="#challenge">See this month's challenge</a><a class="text-link" href="#ideas">Suggest an idea →</a></div>
 </section>
 
+<section class="section alt" id="join">
+  <div class="join-panel">
+    <div>
+      <span class="eyebrow">STAY CONNECTED</span>
+      <h2>Join the group chat</h2>
+      <p>Want updates about challenges, meetings and club activities? Leave your name and year group below and the committee will add you to the Design & Create group chat.</p>
+    </div>
+    <form onsubmit="submitMember(event)">
+      <label for="memberName">Name</label>
+      <input id="memberName" required maxlength="80" autocomplete="name" placeholder="Your name">
+      <label for="memberYear">Year group</label>
+      <select id="memberYear" required>
+        <option value="" disabled selected>Select your year group</option>
+        <option>Year 9</option><option>Year 10</option><option>Year 11</option><option>Year 12</option><option>Year 13</option>
+      </select>
+      <button class="button" type="submit">Join the group chat →</button>
+      <small id="memberStatus"></small>
+    </form>
+  </div>
+</section>
+
 <section class="board section" id="challenge">
   <div class="section-head"><div><span class="eyebrow">THE CLUB BOARD</span><h2>This month's challenge</h2></div><span class="pill" id="monthLabel">MONTH 01</span></div>
   <div class="challenge">
@@ -70,32 +91,13 @@
     <div class="game-box"><div class="game-title"><div><span class="eyebrow">01</span><h3>Minesweeper</h3></div><button class="small-button" onclick="newMines()">New game</button></div>
       <div class="mine-info"><span>Mines: <b id="mineCount">10</b></span><span>Time: <b id="mineTime">0</b></span></div><div id="mineGrid" class="mine-grid"></div><p id="mineMessage" class="game-message"></p>
     </div>
-    <div class="game-box wordle"><div class="game-title"><div><span class="eyebrow">02</span><h3>Daily Wordle</h3></div><span class="pill">DEMO</span></div>
-      <p>Today's committee-set word. Six guesses. (Demo word is <b>CREATE</b>.)</p><div id="wordRows"></div><div class="keyboard" id="keyboard"></div><p id="wordMessage" class="game-message"></p>
+    <div class="game-box wordle"><div class="game-title"><div><span class="eyebrow">02</span><h3>Daily Wordle</h3></div></div>
+      <p>Today's committee-set word. Six guesses.</p><div id="wordRows"></div><div class="keyboard" id="keyboard"></div><p id="wordMessage" class="game-message"></p>
     </div>
   </div>
 </section>
 
-<section class="section alt" id="join">
-  <div class="join-panel">
-    <div>
-      <span class="eyebrow">STAY CONNECTED</span>
-      <h2>Join the group chat</h2>
-      <p>Want updates about challenges, meetings and club activities? Leave your name and year group below and the committee will add you to the Design & Create group chat.</p>
-    </div>
-    <form onsubmit="submitMember(event)">
-      <label for="memberName">Name</label>
-      <input id="memberName" required maxlength="80" autocomplete="name" placeholder="Your name">
-      <label for="memberYear">Year group</label>
-      <select id="memberYear" required>
-        <option value="" disabled selected>Select your year group</option>
-        <option>Year 9</option><option>Year 10</option><option>Year 11</option><option>Year 12</option><option>Year 13</option>
-      </select>
-      <button class="button" type="submit">Join the group chat →</button>
-      <small id="memberStatus"></small>
-    </form>
-  </div>
-</section>
+
 
 <section class="section ideas" id="ideas">
   <div class="idea-panel"><div><span class="eyebrow">YOUR TURN</span><h2>What should we make next?</h2><p>Suggest a problem, topic, activity or resource. The committee will review ideas before they appear on the club board.</p></div>

@@ -85,8 +85,10 @@ async function submitMember(e){
     document.getElementById('memberYear').value='';
     status.textContent='Thanks — your details have been sent to the committee.';
   }catch(err){
-    console.error('Group chat signup failed:',err);
-    status.textContent='Could not send your details. Please try again.';
+    console.error('Group chat signup failed:', err);
+    if(err?.code==='42P01') status.textContent='The group chat sign-up is not set up yet. Please tell the committee.';
+    else if(err?.code==='42501') status.textContent='The group chat sign-up needs a Supabase permission fix. Please tell the committee.';
+    else status.textContent='Could not send your details. Please try again.';
   }
 }
 
