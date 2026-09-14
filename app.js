@@ -136,5 +136,28 @@ async function submitArticle(e){
 async function loadArticles(){try{const {data,error}=await db('articles',{select:'*',eq:{published:true},order:{column:'created_at',ascending:false}});if(error)throw error;const grid=document.getElementById('articleGrid');if(!grid)return;if(!data?.length){grid.innerHTML='<p class="empty-state">No articles yet.</p>';return}grid.innerHTML=data.map(a=>`<article class="article-card"><span class="tag">${escapeHtml(a.category||'ARTICLE')}</span><h3>${escapeHtml(a.title)}</h3><p>${escapeHtml(a.content).slice(0,220)}</p>${a.media_url?`<a class=\"resource-link\" href=\"${escapeHtml(a.media_url)}\" target=\"_blank\" rel=\"noopener\">View attachment →</a>`:''}<a class="article-read" href="article.html?id=${encodeURIComponent(a.id)}" target="_blank" rel="noopener">Read article →</a><div class="article-byline">Published by ${escapeHtml(a.author||'Design & Create')}</div></article>`).join('')}catch(e){console.warn('Articles load failed:',e)}}
 
 async function loadResources(){try{const {data,error}=await db('resources',{select:'*',order:{column:'created_at',ascending:false}});if(error)throw error;const grid=document.getElementById('resourceGrid');if(!grid)return;if(!data?.length){grid.innerHTML='<p class="empty-state">No resources yet.</p>';return}grid.innerHTML=data.map(r=>`<article class="resource"><span>RESOURCE</span><h3>${escapeHtml(r.title)}</h3><p>${escapeHtml(r.description||'')}</p>${r.url?`<a class="resource-link" href="${escapeHtml(r.url)}" target="_blank" rel="noopener">Open resource →</a>`:''}${r.media_url?`<a class="resource-link" href="${escapeHtml(r.media_url)}" target="_blank" rel="noopener">View attachment →</a>`:''}</article>`).join('')}catch(e){console.warn('Resources load failed:',e)}}
+
+async function loadCreations(){
+  try{
+    const {data,error}=await sb.from('creations').select('*,creation_media(*)').order('created_at',{ascending:false});
+    const grid=document.getElementById('creationGrid');
+    if(!grid)return;
+    if(error)throw error;
+    if(!data?.length){grid.innerHTML='<p class="empty-state">No member creations yet.</p>';return;}
+    const groups={};
+    data.forEach(c=>{(groups[c.topic]??=[]).push(c)});
+    grid.innerHTML=Object.entries(groups).map(([topic,items])=>`
+      <section class="creation-topic">
+        <div class="creation-topic-head"><div><span class="eyebrow">TOPIC</span><h3>${escapeHtml(topic)}</h3></div><span class="creation-count">${items.length} project${items.length===1?'':'s'}</span></div>
+        <div class="creation-cards">${items.map(c=>{
+          const media=(c.creation_media||[]).sort((a,b)=>a.id-b.id);
+          const images=media.filter(m=>(m.media_type||'').startsWith('image/'));
+          const files=media.filter(m=>!(m.media_type||'').startsWith('image/'));
+          return `<article class="creation-card"><span class="tag">MEMBER WORK</span><h3>${escapeHtml(c.title)}</h3>${c.author?`<div class="creation-author">Made by ${escapeHtml(c.author)}</div>`:''}${c.description?`<p><b>${escapeHtml(c.description)}</b></p>`:''}${c.content?`<p>${escapeHtml(c.content)}</p>`:''}${images.length?`<div class="creation-gallery">${images.map(m=>`<a href="${escapeHtml(m.media_url)}" target="_blank" rel="noopener"><img src="${escapeHtml(m.media_url)}" alt="Photo from ${escapeHtml(c.title)}"></a>`).join('')}</div>`:''}${files.length?`<div class="creation-files">${files.map(m=>`<a href="${escapeHtml(m.media_url)}" target="_blank" rel="noopener">${escapeHtml(m.file_name||'Open file')} ↗</a>`).join('')}</div>`:''}</article>`
+        }).join('')}</div>
+      </section>`).join('');
+  }catch(e){console.warn('Creations load failed:',e)}
+}
+
 function escapeHtml(s=''){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
-document.addEventListener('DOMContentLoaded',()=>{newMines();newMemoryGame();loadChallenge();loadArticles();loadResources();document.querySelector('.brand')?.addEventListener('click',secretCommitteeAccess)});
+document.addEventListener('DOMContentLoaded',()=>{newMines();newMemoryGame();loadChallenge();loadCreations();loadArticles();loadResources();document.querySelector('.brand')?.addEventListener('click',secretCommitteeAccess)});

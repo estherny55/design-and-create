@@ -14,3 +14,7 @@ The editor uses Supabase Auth with one shared committee account. The email is hi
 
 ## Group chat sign-ups
 The public site collects a student's name and year group in the `members` table. Committee members can review requests in the editor and mark students as added to the group chat.
+
+
+### Member creations
+Run `media-setup.sql` in Supabase SQL Editor. It creates the `creations` and `creation_media` tables and adds policies for the public showcase and committee editor. The editor supports up to 10 attachments per project, including images, PDF and PowerPoint files.
